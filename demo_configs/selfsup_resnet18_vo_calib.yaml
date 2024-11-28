@@ -1,0 +1,92 @@
+# Copyright 2024 Toyota Motor Corporation. All rights reserved.
+# The implementation is derived from TRI-VIDAR -- 2023 Toyota Research Institute.
+# ---------------------------------------------------------------
+# * A tutorial code for Self-supervised depth and ego-motion learning with Intrinsics Self-calibration:
+# * We presume that the following structure of dataset
+#   ```
+#   /data/datasets/DDAD/000000/rgb_1216_1936
+#     ├── arbitrary_name_00 (CAMERA_01)
+#     │   ├── arbitrary_000.png
+#     │   ├── arbitrary_001.png
+#     │   : ...
+#     ├── arbitrary_name_01  (CAMERA_02)
+#     │   ├── arbitrary_000.png
+#     │   ├── arbitrary_001.png
+#     │   : ...
+#     : ...
+#   ```
+# * Though DDAD has ground-truth intrinsics and can be correctly loaded by ``name: [Ourawboros]``,
+#    this demonstration provides the from-the-scratch acquisition of them.
+# * Since the learned checkpoint can seamlessly be adaptable to SG-Init VO,
+#    please refer to https://github.com/ToyotaFRC/SGInit-VO to try the visual odometry demo fully.
+# * Please note that, this demonstration assumes ALL Intrinsics are shared across the image folders.
+# * To properly work the dummy validation, please download KITTI_tiny from the following link:
+#    ```bash
+#    curl -s https://tri-ml-public.s3.amazonaws.com/github/packnet-sfm/datasets/KITTI_tiny.tar | tar -xv -C /data/datasets/
+#    ```
+# ---------------------------------------------------------------
+wrapper:
+    recipe: wrapper|default_flip
+    validate_first: False
+    max_epochs: 1
+arch:
+    model:
+        file: depth/SelfSupervisedVOModel
+        checkpoint: /data/models/papers/SGInit_MR_selfsup_DDAD.ckpt # No Mandatory
+        use_gt_intrinsics: False
+        print_intrinsics: True
+        pose_scaling: False
+    networks:
+        depth:
+            recipe: networks/mono_depth_net|resnet18
+            depth_range: [0.1,200.0]
+            num_scales: 4
+        pose:
+            recipe: networks/pose_net|resnet18
+        intrinsics:
+            file: intrinsics/IntrinsicsNet
+            shape: [ 384,640 ]
+            camera_model: pinhole
+    losses:
+        reprojection:
+            recipe: losses/depth|self_supervised
+        smoothness:
+            recipe: losses/depth|smoothness
+optimizers:
+    depth:
+        recipe: optimizers|adam_20_05_step
+        lr: 2.0e-4
+    pose:
+        recipe: optimizers|adam_20_05_step
+        lr: 2.0e-4
+    intrinsics:
+        recipe: optimizers|adam_20_05_step
+        lr: 0.01
+# %%%%%%%%%%%%%%%%%% NEEDED BECAUSE OF THE MODEL SAVING %%%%%%%
+checkpoint:
+    recipe: checkpoint|default_local
+    folder: /data/checkpoints/vo_demo
+    keep_top: 5
+evaluation:
+    depth:
+        recipe: evaluation/depth|kitti_resize
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+datasets:
+    train:
+        name: [Image]
+        path: [ /data/datasets/DDAD/000150/rgb_1216_1936 ]
+        extension: [jpg]
+        context: [-1,1]
+        labels: []
+        labels_context: []
+        augmentation:
+            resize: [384,640]
+        dataloader:
+            batch_size: 16
+            pin_memory: True
+            num_workers: 16
+        repeat: [ 1 ]
+    # %%%%%%%%%%%%%%%%%% NEEDED BECAUSE OF THE MODEL SAVING %%%%%%%
+    validation:
+        recipe: datasets/kitti_tiny|val_velodyne_MR
+    # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

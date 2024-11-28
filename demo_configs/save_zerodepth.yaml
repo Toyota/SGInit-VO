@@ -1,0 +1,45 @@
+# Copyright 2024 Toyota Motor Corporation. All rights reserved.
+# The implementation is derived from TRI-VIDAR -- 2023 Toyota Research Institute.
+wrapper:
+    recipe: wrapper|default_flip
+    max_epochs: 1
+    validate_first: True
+    find_unused_parameters: True
+    flip_lr_prob: 0.5
+    validate_flipped: True
+    use_tf32: True
+arch:
+    model:
+        file: generic/GenericModel
+        params:
+            intrinsics:
+                use_gt: True
+            pose:
+                use_gt: True
+            perceiver:
+                inputs: [rgb,intrinsics]
+                targets: target
+                encodes: target
+                losses: target
+    networks:
+        perceiver:
+            recipe: networks/zerodepth_net|default
+            checkpoint: /data/models/papers/ZeroDepth_unified.ckpt
+            sample_encoder: [0.5,1.0,1.0]  
+            shake_encoder: True
+            shake_decoder: True
+            encode_augmentation:
+                resize: [[0.25,1.5,32],[0.25,1.5,32]]
+datasets:
+    validation:
+        name: [Image]
+        path: [/data/datasets/tiny/DDAD_tiny/000150/rgb]
+        labels: [dummy_depth, intrinsics]
+        dataloader:
+            batch_size: 4
+        augmentation:
+            resize: [384,640]
+save:
+    recipe: save|depth_splitname
+    folder: /data/preprocessed/save/zerodepth_depthmap
+    depth: [viz]

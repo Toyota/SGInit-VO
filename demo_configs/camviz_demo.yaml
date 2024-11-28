@@ -1,0 +1,42 @@
+# Copyright 2024 Toyota Motor Corporation. All rights reserved.
+# The implementation is derived from TRI-VIDAR -- 2023 Toyota Research Institute.
+wrapper:
+    recipe: wrapper|default_flip
+    validate_first: False
+    max_epochs: 1
+arch:
+    model:
+        file: depth/SelfSupervisedVOModel
+        display:
+            keys_for_visualization: [[0,0]]
+            viz_wh: [640, 192]
+    networks:
+        depth:
+            recipe: networks/mono_depth_net|resnet18
+            depth_range: [0.1,100.0]
+        pose:
+            recipe: networks/pose_net|resnet18
+    losses:
+        reprojection:
+            recipe: losses/depth|self_supervised
+        smoothness:
+            recipe: losses/depth|smoothness
+optimizers:
+    depth:
+        recipe: optimizers|adam_20_05_step
+        lr: 2.0e-4
+    pose:
+        recipe: optimizers|adam_20_05_step
+        lr: 2.0e-4
+evaluation:
+    depth:
+        recipe: evaluation/depth|kitti_resize
+datasets:
+    train:
+        recipe: datasets/kitti_tiny|train_self_supervised_MR
+        dataloader:
+            batch_size: 16
+            pin_memory: True
+            num_workers: 16
+    validation:
+        recipe: datasets/kitti_tiny|val_velodyne_MR

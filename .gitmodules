@@ -1,0 +1,9 @@
+[submodule "thirdparty/eigen"]
+	path = thirdparty/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "thirdparty/no_root_docker_run"]
+	path = thirdparty/no_root_docker_run
+	url = https://github.com/Toyota/no_root_docker_run.git
+[submodule "thirdparty/vidar"]
+	path = thirdparty/vidar
+	url = https://github.com/TRI-ML/vidar.git
