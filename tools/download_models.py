@@ -7,7 +7,7 @@ import gdown
 ROOT_DIR = "/data/models/papers"
 MODELS = ["SGInit_MR_selfsup_DDAD.ckpt", "ZeroDepth_unified.ckpt", "droid.pth"]
 URLS = [
-    "https://tri-ml-public.s3.amazonaws.com/github/vidar/models/SGInit_MR_selfsup_DDAD.ckpt",
+    "https://s3.us-east-1.amazonaws.com/tri-ml-public.s3.amazonaws.com/github/SG-Init/SGInit_MR_selfsup_DDAD.ckpt",
     "https://tri-ml-public.s3.amazonaws.com/github/vidar/models/ZeroDepth_unified.ckpt", 
     "https://drive.google.com/u/0/uc?id=1PpqVt1H4maBa_GbPJp4NwxRsd9jk-elh",
 ]

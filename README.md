@@ -12,6 +12,8 @@
 **SGInit-VO** is a repository containing scripts to replicate the experiment in the paper, titled <i> "Self-Supervised Geometry-Guided Initialization for Robust Monocular Visual
 Odometry." </i> by Takayuki Kanai, Igor Vasiljevic, Vitor Guizilini, and Kazuhiro Shintani.
 
+**UPDATE**: Accepted at [IROS2025](https://www.iros25.org/)🚀
+
 The paper and the project page are available:
 
 - **arXiv**: https://arxiv.org/abs/2406.00929v1
@@ -51,7 +53,12 @@ make noroot-interactive
 We enter the container, and the following procedures are conducted inside the container hereafter.
 
 #### Download dataset, models, etc. (for your first time)
-Please download the materials to your PC by `./tools/download_ddad.sh`, `./tools/download_models.sh`, etc.
+Please download the dependent items to your PC as follows: 
+
+```bash
+./tools/download_ddad.sh # for DDAD (40GB) datasets
+python ./tools/download_models.py # for pretrained models
+```
 
 #### Replicate Visual Odometry (SG-Init + DROID (L), GIF's Right)
 
